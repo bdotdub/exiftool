@@ -2,7 +2,6 @@ package exiftool
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"os/exec"
 	"regexp"

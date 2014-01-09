@@ -49,10 +49,12 @@ func Decode(r io.Reader) (*Exif, error) {
 	done := make(chan bool)
 	out := new(bytes.Buffer)
 
-	go func() {
+	go func(stdout io.ReadCloser) {
+		defer stdout.Close()
 		io.Copy(out, stdout)
 		done <- true
-	}()
+	}(stdout)
+
 	<-done
 
 	err = cmd.Wait()

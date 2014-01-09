@@ -1,6 +1,9 @@
 package exiftool
 
 import (
+	"bytes"
+	"fmt"
+	"io"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -14,21 +17,66 @@ const (
 type Exif struct {
 	DateTimeOriginal string
 	GPS              struct {
-		Latitude    float64
-		Longitude   float64
+		Latitude  float64
+		Longitude float64
 	}
 }
 
+func Decode(r io.Reader) (*Exif, error) {
+	args := []string{"-c", gpsPrecisionFmt, "-"}
+
+	cmd := exec.Command("exiftool", args...)
+
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		return nil, err
+	}
+
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+
+	err = cmd.Start()
+	if err != nil {
+		return nil, err
+	}
+
+	go func(in io.WriteCloser, r io.Reader) {
+		defer in.Close()
+		io.Copy(in, r)
+	}(stdin, r)
+
+	done := make(chan bool)
+	out := new(bytes.Buffer)
+
+	go func() {
+		io.Copy(out, stdout)
+		done <- true
+	}()
+	<-done
+
+	err = cmd.Wait()
+	if err != nil {
+		return nil, err
+	}
+
+	return parseOutput(out.Bytes())
+}
+
 func DecodeFileAtPath(p string) (*Exif, error) {
-	var e *Exif
 	args := []string{"-c", gpsPrecisionFmt, p}
 
 	out, err := exec.Command("exiftool", args...).Output()
 	if err != nil {
-		return e, err
+		return nil, err
 	}
 
-	e = new(Exif)
+	return parseOutput(out)
+}
+
+func parseOutput(out []byte) (*Exif, error) {
+	e := new(Exif)
 
 	for _, l := range strings.Split(string(out), "\n") {
 		parts := strings.SplitN(l, ": ", 2)

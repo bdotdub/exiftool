@@ -30,11 +30,13 @@ func Decode(r io.Reader) (*Exif, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer stdin.Close()
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return nil, err
 	}
+	defer stdout.Close()
 
 	err = cmd.Start()
 	if err != nil {

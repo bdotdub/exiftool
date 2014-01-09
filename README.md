@@ -34,6 +34,7 @@ func main() {
 	log.Println(exif.GPS.Latitude)
 	log.Println(exif.GPS.Longitude)
 }
+```
 
 Motivation
 -------

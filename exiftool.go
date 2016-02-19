@@ -89,7 +89,7 @@ func parseOutput(out []byte) (*Exif, error) {
 
 		field, value := parts[0], parts[1]
 
-		if ok, _ := regexp.MatchString("Date/Time Original", field); ok {
+		if ok, _ := regexp.MatchString("Create Date", field); ok {
 			e.DateTimeOriginal = value
 		} else if ok, _ := regexp.MatchString("GPS Latitude +$", field); ok {
 			v, err := valueForCoordinateString(value)

@@ -15,6 +15,12 @@ const (
 
 type Exif struct {
 	DateTimeOriginal string
+	LensModel        string
+	LensID           string
+	ShutterSpeed     string
+	Aperture         string
+	ISO              string
+	FocalLength      string
 	GPS              struct {
 		Latitude  float64
 		Longitude float64
@@ -91,6 +97,18 @@ func parseOutput(out []byte) (*Exif, error) {
 
 		if ok, _ := regexp.MatchString("Date/Time Original", field); ok {
 			e.DateTimeOriginal = value
+		} else if ok, _ := regexp.MatchString("Lens Model", field); ok {
+			e.LensModel = value
+		} else if ok, _ := regexp.MatchString("Lens ID", field); ok {
+			e.LensID = value
+		} else if ok, _ := regexp.MatchString("Shutter Speed", field); ok {
+			e.ShutterSpeed = value
+		} else if ok, _ := regexp.MatchString("Aperture", field); ok {
+			e.Aperture = value
+		} else if ok, _ := regexp.MatchString("ISO", field); ok {
+			e.ISO = value
+		} else if ok, _ := regexp.MatchString("Focal Length", field); ok {
+			e.FocalLength = value
 		} else if ok, _ := regexp.MatchString("GPS Latitude +$", field); ok {
 			v, err := valueForCoordinateString(value)
 			if err == nil {
